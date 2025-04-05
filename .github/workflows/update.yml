@@ -74,7 +74,7 @@ jobs:
           # 假设解压后的 Android 文件是 mihomo-android-arm64-v8a-alpha-${version}/mihomo
           
           # Rename the extracted files to mihomo
-          mv ./mihomo-windows-amd64-alpha-*/mihomo*.exe ./mihomo.exe
+          mv mihomo*.exe ./mihomo.exe
           mv ./mihomo-android-arm64-v8a-alpha-*/mihomo* ./mihomo
 
           mkdir mihomo
