@@ -43,8 +43,12 @@ jobs:
           git config --local user.email "126886178+zutzo@users.noreply.github.com"
           git config --local user.name "Seele"
           git add .
-          git commit -m "Update assets"
-          git push origin HEAD:main || echo "No changes to commit"
+          if ! git diff --cached --quiet; then
+            git commit -m "Update assets"
+            git push origin HEAD:main
+          else
+            echo "No changes to commit"
+          fi
 
       - name: Get mihomo version
         id: mihomo_version
