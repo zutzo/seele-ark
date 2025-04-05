@@ -84,8 +84,8 @@ jobs:
 
       - name: Package
         run: |
-          tar -czvf seele-ark-android.gz ./rules ./ui ./mihomo/mihomo
-          zip -r seele-ark-windows.zip ./rules ./ui ./mihomo/mihomo.exe
+          tar -czvf seele-ark-android.gz ./rules ./ui ./tmihomo/mihomo
+          zip -r seele-ark-windows.zip ./rules ./ui ./tmihomo/mihomo.exe
 
       - name: Create Release
         id: create_release
