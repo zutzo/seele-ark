@@ -54,7 +54,7 @@ jobs:
       - name: Get mihomo version and download
         run: |
             # Get version
-            curl -s https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/version.txt -o version.txt
+            wget https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/version.txt
             version=$(cat version.txt)
             echo "Downloading mihomo version: $version"
             
