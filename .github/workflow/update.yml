@@ -1,0 +1,109 @@
+name: Update
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 每天 UTC 0 点运行，对应北京时间 8 点
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download rules
+        run: |
+          # Read config.yaml
+          CONFIG=$(cat config.yaml)
+
+          # Extract rules using grep and sed
+          RULES=$(echo "$CONFIG" | grep -oP 'rules: \[\K[^\]]+' | sed 's/,/\n/g' | grep -E 'https.*\.mrs')
+
+          # Download rules
+          if [[ -n "$RULES" ]]; then
+            while IFS= read -r URL; do
+              if [[ "$URL" == *"https"* && "$URL" == *".mrs"* ]]; then
+                FILENAME=$(basename "$URL")
+                echo "Downloading $URL to ./rules/$FILENAME"
+                curl -L "$URL" -o "./rules/$FILENAME"
+              fi
+            done <<< "$RULES"
+          else
+            echo "No rules found in config.yaml"
+          fi
+
+      - name: Download and extract UI
+        run: |
+          curl -L https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip -o ui.zip
+          unzip ui.zip -d ./ui
+          mv ./ui/zashboard-gh-pages/* ./ui/
+          rm -rf ./ui/zashboard-gh-pages ./ui.zip
+
+      - name: Get mihomo version
+        id: mihomo_version
+        run: |
+          version=$(curl -s https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/version.txt)
+          echo "::set-output name=version::$version"
+
+      - name: Download mihomo
+        run: |
+          version="${{ steps.mihomo_version.outputs.version }}"
+          echo "Downloading mihomo version: $version"
+          curl -L https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/mihomo-windows-amd64-alpha-${version}.zip -o mihomo-windows-amd64.zip
+          curl -L https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/mihomo-android-arm64-v8-alpha-${version}.gz -o mihomo-android-arm64-v8a.gz
+
+      - name: Extract and rename mihomo
+        run: |
+          unzip mihomo-windows-amd64.zip
+          gzip -d mihomo-android-arm64-v8a.gz
+          
+          # 假设解压后的 Windows 文件是 mihomo-windows-amd64-alpha-${version}/mihomo.exe
+          # 假设解压后的 Android 文件是 mihomo-android-arm64-v8a-alpha-${version}/mihomo
+          
+          # Rename the extracted files to mihomo
+          mv ./mihomo-windows-amd64-alpha-*/mihomo*.exe ./mihomo.exe
+          mv ./mihomo-android-arm64-v8a-alpha-*/mihomo* ./mihomo
+
+          mkdir mihomo
+
+          mv ./mihomo.exe ./mihomo/mihomo.exe
+          mv ./mihomo ./mihomo/mihomo
+
+      - name: Package
+        run: |
+          tar -czvf seele-ark-android.gz ./rules ./ui ./mihomo/mihomo
+          zip -r seele-ark-windows.zip ./rules ./ui ./mihomo/mihomo.exe
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: prerelease
+          release_name: Seele Ark Prerelease ${{ github.event.schedule }}
+          body: |
+            Updated on ${{ github.event.schedule }}
+            mihomo version: ${{ steps.mihomo_version.outputs.version }}
+          draft: false
+          prerelease: true
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./seele-ark-android.gz
+          asset_name: seele-ark-android.gz
+          asset_content_type: application/gzip
+      
+      - name: Upload Windows Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./seele-ark-windows.zip
+          asset_name: seele-ark-windows.zip
+          asset_content_type: application/zip
