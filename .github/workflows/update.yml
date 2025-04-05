@@ -14,24 +14,15 @@ jobs:
 
       - name: Download rules
         run: |
-          # Read config.yaml
-          CONFIG=$(cat config.yaml)
-
-          # Extract rules using grep and sed
-          RULES=$(echo "$CONFIG" | grep -oP 'rules: \[\K[^\]]+' | sed 's/,/\n/g' | grep -E 'https.*\.mrs')
-
-          # Download rules
-          if [[ -n "$RULES" ]]; then
-            while IFS= read -r URL; do
-              if [[ "$URL" == *"https"* && "$URL" == *".mrs"* ]]; then
-                FILENAME=$(basename "$URL")
-                echo "Downloading $URL to ./rules/$FILENAME"
-                curl -L "$URL" -o "./rules/$FILENAME"
-              fi
-            done <<< "$RULES"
-          else
-            echo "No rules found in config.yaml"
-          fi
+          RULES=$(grep -Eo "https.+\.mrs" config.yaml)
+          
+          mkdir -p ./rules
+          
+          echo "$RULES" | while read -r URL; do
+            FILENAME=$(basename "$URL")
+            echo "Downloading $URL to ./rules/$FILENAME"
+            curl -L "$URL" -o "./rules/$FILENAME"
+          done
 
       - name: Download and extract UI
         run: |
@@ -76,6 +67,7 @@ jobs:
           zip -r seele-ark-windows.zip ./rules ./ui ./mihomo/mihomo.exe
 
       - name: Create Release
+        id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -93,7 +85,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./seele-ark-android.gz
           asset_name: seele-ark-android.gz
           asset_content_type: application/gzip
@@ -103,7 +95,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./seele-ark-windows.zip
           asset_name: seele-ark-windows.zip
           asset_content_type: application/zip
