@@ -21,7 +21,7 @@ jobs:
           RULES=$(grep -Eo "https.+\.mrs" config.yaml)
           
           mkdir -p ./rules
-          
+          rm -rf ./rules/*
           echo "$RULES" | while read -r URL; do
             FILENAME=$(basename "$URL")
             echo "Downloading $URL to ./rules/$FILENAME"
@@ -32,7 +32,7 @@ jobs:
         run: |
           curl -L https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip -o ui.zip
           unzip ui.zip -d ./ui
-          mv ./ui/zashboard-gh-pages/* ./ui/
+          mv -f ./ui/zashboard-gh-pages/* ./ui/
           rm -rf ./ui/zashboard-gh-pages ./ui.zip
 
       - name: Push to Repo
