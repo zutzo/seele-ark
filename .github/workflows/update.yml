@@ -77,10 +77,10 @@ jobs:
           mv mihomo*.exe ./mihomo.exe
           mv mihomo-android* ./mihomo
 
-          mkdir mihomo
+          mkdir tmihomo
 
-          mv ./mihomo.exe ./mihomo/mihomo.exe
-          mv ./mihomo ./mihomo/mihomo
+          mv ./mihomo.exe ./tmihomo/mihomo.exe
+          mv ./mihomo ./tmihomo/mihomo
 
       - name: Package
         run: |
