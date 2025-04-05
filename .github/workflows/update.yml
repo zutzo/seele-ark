@@ -4,6 +4,8 @@ on:
   schedule:
     - cron: '0 0 * * *'  # 每天 UTC 0 点运行，对应北京时间 8 点
   workflow_dispatch:  # 允许手动触发
+  push:
+
 
 # 添加权限配置
 permissions:
@@ -31,6 +33,7 @@ jobs:
       - name: Download and extract UI
         run: |
           curl -L https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip -o ui.zip
+          rm -rf ./ui/*          
           unzip ui.zip -d ./ui
           mv -f ./ui/zashboard-gh-pages/* ./ui/
           rm -rf ./ui/zashboard-gh-pages ./ui.zip
