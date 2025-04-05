@@ -31,11 +31,21 @@ jobs:
           mv ./ui/zashboard-gh-pages/* ./ui/
           rm -rf ./ui/zashboard-gh-pages ./ui.zip
 
+      - name: Push to Repo
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Update assets"
+          git push origin HEAD:main || echo "No changes to commit"
+
       - name: Get mihomo version
         id: mihomo_version
         run: |
-          version=$(curl -s https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/version.txt)
+          curl -s https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/version.txt -o version.txt
+          version=$(cat version.txt)
           echo "::set-output name=version::$version"
+          rm version.txt
 
       - name: Download mihomo
         run: |
