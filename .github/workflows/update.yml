@@ -102,12 +102,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: prerelease
-        release_name: Seele Ark Prerelease
+          release_name: Seele Ark Prerelease
           body: |
             Updated on ${{ steps.date.outputs.now }}
             Version is ${{ steps.get_version.outputs.version }}
-        draft: false
-        prerelease: true
+          draft: false
+          prerelease: true
 
 
       - name: Upload Release Asset
