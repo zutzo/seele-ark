@@ -51,6 +51,7 @@ jobs:
           fi
 
       - name: Get mihomo version and download
+        id: get_version
         run: |
             # Get version
             wget https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/version.txt
@@ -80,8 +81,8 @@ jobs:
 
       - name: Package
         run: |
-          tar -czvf seele-ark-android.gz ./rules ./ui mihomo start.sh
-          zip -r seele-ark-windows.zip ./rules ./ui mihomo.exe start.bat
+          tar -czvf seele-ark-android.gz ./rules ./ui mihomo config.yaml start.sh
+          zip -r seele-ark-windows.zip ./rules ./ui mihomo.exe config.yaml start.bat
           
       - name: Delete existing prerelease if exists
         uses: dev-drprasad/delete-tag-and-release@v1.0
