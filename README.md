@@ -4,4 +4,4 @@
 
 ## 📦 Release
 
-[🔗 Seele Ark Releases](https://github.com/your-repo/seele-ark/releases)
+[🔗 Seele Ark Releases](https://github.com/zutzo/seele-ark/releases)
