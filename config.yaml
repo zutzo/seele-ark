@@ -168,9 +168,7 @@ rules:
   - RULE-SET,geolocation-!cn,其他
 
   - RULE-SET,google_ip,Google
-  - RULE-SET,netflix_ip,NETFLIX
   - RULE-SET,telegram_ip,Telegram
-  - RULE-SET,twitter_ip,Twitter
   - RULE-SET,cn_ip,国内
   - MATCH,其他
 
