@@ -44,8 +44,8 @@ jobs:
           git config --local user.name "Seele"
           git add .
           if ! git diff --cached --quiet; then
-            git commit -m "Update assets"
-            git push origin HEAD:main
+            git commit -S -m "Update assets"
+            git push --signed origin HEAD:main
           else
             echo "No changes to commit"
           fi
