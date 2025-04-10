@@ -79,7 +79,7 @@ jobs:
       - name: Package
         run: |
           tar -czvf seele-ark-android.gz ./rules ./ui mihomo config.yaml start.sh
-          zip -r seele-ark-windows.zip ./rules ./ui mihomo.exe config.yaml start.bat
+          zip -r seele-ark-windows.zip ./rules ./ui mihomo.exe config.yaml start.vbs
           
       - name: Delete existing prerelease if exists
         uses: dev-drprasad/delete-tag-and-release@v1.0
