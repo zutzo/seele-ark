@@ -87,7 +87,6 @@ jobs:
           tag_name: prerelease
           github_token: ${{ secrets.GITHUB_TOKEN }}
           delete_release: true
-          delete_draft: true
         continue-on-error: true
   
       - name: Get current date
