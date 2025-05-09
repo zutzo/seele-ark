@@ -81,12 +81,13 @@ jobs:
           tar -czvf seele-ark-android.gz ./rules ./ui mihomo config.yaml start.sh
           zip -r seele-ark-windows.zip ./rules ./ui mihomo.exe config.yaml start.vbs
           
-      - name: Delete existing prerelease if exists
+      - name: Delete existing prerelease and drafts
         uses: dev-drprasad/delete-tag-and-release@v1.0
         with:
           tag_name: prerelease
           github_token: ${{ secrets.GITHUB_TOKEN }}
           delete_release: true
+          delete_draft: true
         continue-on-error: true
   
       - name: Get current date
