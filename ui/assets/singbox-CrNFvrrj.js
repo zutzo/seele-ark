@@ -1,1 +1,0 @@
-import{g as e,h as t}from"./index-D2GaDcD3.js";var n=async()=>{e.value=[],t.value=[]};export{n as fetchRules};
