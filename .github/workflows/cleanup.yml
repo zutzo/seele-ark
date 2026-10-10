@@ -1,0 +1,29 @@
+name: Cleanup Commits
+
+on:
+  schedule:
+    - cron: '0 0 */3 * *'  # 每3天UTC 0点运行
+  workflow_dispatch:  # 允许手动触发
+
+permissions:
+  contents: write  # 授予对仓库内容的写入权限
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # 获取完整历史
+
+      - name: Create new orphan branch
+        run: |
+          git checkout --orphan temp_branch
+          git config --local user.email "126886178+zutzo@users.noreply.github.com"
+          git config --local user.name "Seele"          
+          git add -A
+          git commit -m "Cleanup commits"
+          git branch -D main
+          git branch -m main
+          git push -f origin main
