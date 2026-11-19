@@ -1,0 +1,129 @@
+name: Update
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 每天 UTC 0 点运行，对应北京时间 8 点
+  workflow_dispatch:  # 允许手动触发
+  #push:
+
+
+# 添加权限配置
+permissions:
+  contents: write  # 授予对仓库内容的写入权限
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download rules
+        run: |
+          RULES=$(grep -Eo "https.+\.mrs" config.yaml)
+          
+          mkdir -p ./rules
+          rm -rf ./rules/*
+          echo "$RULES" | while read -r URL; do
+            FILENAME=$(basename "$URL")
+            echo "Downloading $URL to ./rules/$FILENAME"
+            curl -L "$URL" -o "./rules/$FILENAME"
+          done
+
+      - name: Download and extract UI
+        run: |
+          curl -L https://github.com/Zephyruso/zashboard/archive/refs/heads/gh-pages.zip -o ui.zip
+          rm -rf ./ui/*          
+          unzip ui.zip -d ./ui
+          mv -f ./ui/zashboard-gh-pages/* ./ui/
+          rm -rf ./ui/zashboard-gh-pages ./ui.zip
+
+      - name: Push to Repo
+        run: |
+          git config --local user.email "126886178+zutzo@users.noreply.github.com"
+          git config --local user.name "Seele"
+          git add .
+          if ! git diff --cached --quiet; then
+            git commit -m "Update assets"
+            git push origin HEAD:main
+          else
+            echo "No changes to commit"
+          fi
+
+      - name: Get mihomo version and download
+        id: get_version
+        run: |
+            # Get version
+            wget https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/version.txt
+            version=$(cat version.txt)
+            echo "version=$(cat version.txt)" >> $GITHUB_OUTPUT
+            echo "Downloading mihomo version: $version"
+            
+            # Download files
+            wget https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/mihomo-windows-amd64-${version}.zip -O mihomo-windows-amd64.zip
+            wget https://github.com/MetaCubeX/mihomo/releases/download/Prerelease-Alpha/mihomo-android-arm64-v8-${version}.gz -O mihomo-android-arm64-v8a.gz
+            
+            # Clean up
+            rm version.txt
+
+
+      - name: Extract and rename mihomo
+        run: |
+          unzip mihomo-windows-amd64.zip
+          gzip -d mihomo-android-arm64-v8a.gz
+
+          # Rename the extracted files to mihomo
+          mv mihomo*.exe ./mihomo.exe
+          mv mihomo-android* ./mihomo
+
+      - name: Package
+        run: |
+          tar -czvf seele-ark-android.gz ./rules ./ui mihomo config.yaml start.sh
+          zip -r seele-ark-windows.zip ./rules ./ui mihomo.exe config.yaml start.vbs
+          
+      - name: Delete existing prerelease and drafts
+        uses: dev-drprasad/delete-tag-and-release@v1.0
+        with:
+          tag_name: prerelease
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          delete_release: true
+        continue-on-error: true
+  
+      - name: Get current date
+        id: date
+        run: echo "now=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_OUTPUT
+  
+      - name: Create/Update Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: prerelease
+          release_name: Seele Ark Prerelease
+          body: |
+            Updated on ${{ steps.date.outputs.now }}
+            Version is ${{ steps.get_version.outputs.version }}
+          draft: false
+          prerelease: true
+
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./seele-ark-android.gz
+          asset_name: seele-ark-android.gz
+          asset_content_type: application/gzip
+    
+      - name: Upload Windows Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./seele-ark-windows.zip
+          asset_name: seele-ark-windows.zip
+          asset_content_type: application/zip
